@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import mysql.connector
-from datetime import datetime, timedelta  # Import timedelta
+from datetime import datetime, timedelta
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 
 # Database connection
 def get_db_connection():
@@ -16,12 +16,12 @@ def get_db_connection():
 
 @app.route('/get_booked_slots', methods=['GET'])
 def get_booked_slots():
-    date = request.args.get('date')  # Get the date from the query parameter
-    room = request.args.get('room')  # Get the room from the query parameter
+    date = request.args.get('date')
+    room = request.args.get('room')
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT timeSlot FROM booking WHERE date = %s AND room = %s", (date, room))
-    booked_slots = cursor.fetchall()  # Fetch all booked time slots for that date and room
+    booked_slots = cursor.fetchall()
     cursor.close()
     conn.close()
     return jsonify([slot[0] for slot in booked_slots])
@@ -42,10 +42,10 @@ def submit_booking():
 
         # Email validation
         if not email.endswith('@city.ac.uk'):
-            return "Invalid email, must end with @city.ac.uk", 400
+            return jsonify({"error": "Invalid email, must end with @city.ac.uk"}), 400
 
         if email != confirm_email:
-            return "Emails do not match. Please check your email inputs.", 400
+            return jsonify({"error": "Emails do not match. Please check your email inputs."}), 400
 
         try:
             booking_date = datetime.strptime(date, '%Y-%m-%d').date()
@@ -53,19 +53,19 @@ def submit_booking():
 
             # Check if the date is in the past
             if booking_date < today:
-                return "The date must be today or in the future.", 400
+                return jsonify({"error": "The date must be today or in the future."}), 400
 
             # Check if the date is more than 2 weeks in advance
             max_booking_date = today + timedelta(days=14)  # 2 weeks from today
             if booking_date > max_booking_date:
-                return "Rooms cannot be booked more than 2 weeks in advance.", 400
+                return jsonify({"error": "Rooms cannot be booked more than 2 weeks in advance."}), 400
 
             # Check if the date is a weekend (Saturday or Sunday)
             if booking_date.weekday() >= 5:  # 5 = Saturday, 6 = Sunday
-                return "Rooms cannot be booked on weekends. Please select a weekday.", 400
+                return jsonify({"error": "Rooms cannot be booked on weekends. Please select a weekday."}), 400
 
         except ValueError:
-            return "Invalid date format. Please use YYYY-MM-DD.", 400
+            return jsonify({"error": "Invalid date format. Please use YYYY-MM-DD."}), 400
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -75,7 +75,7 @@ def submit_booking():
         if existing_booking:
             cursor.close()
             conn.close()
-            return "This time slot is already booked for the selected room.", 400
+            return jsonify({"error": "This time slot is already booked for the selected room."}), 400
 
         # Insert the new booking into the database
         cursor.execute("INSERT INTO booking (email, fullName, room, timeSlot, date) VALUES (%s, %s, %s, %s, %s)", (email, full_name, room, time_slot, date))
