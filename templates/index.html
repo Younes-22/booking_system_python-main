@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Booking</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Room Booking Form</h1>
+        <form action="{{ url_for('submit_booking') }}" method="POST">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <span id="email-error" class="error" style="display: none;">Email must end with @city.ac.uk</span>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_email">Confirm Email:</label>
+                <input type="email" id="confirm_email" name="confirm_email" required>
+                <span id="confirm-email-error" class="error" style="display: none;">Emails do not match</span>
+            </div>
+
+            <div class="form-group">
+                <label for="full_name">Full Name:</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="room">Room:</label>
+                <select id="room" name="room" required>
+                    <option value="" disabled selected>Please Select</option>
+                    <option value="Room 1">Room 1</option>
+                    <option value="Room 2">Room 2</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" id="date" name="date" disabled required>
+            </div>
+
+            <div class="form-group">
+                <label for="time_slot">Time Slot:</label>
+                <select id="time_slot" name="time_slot" disabled required>
+                    <option value="" disabled selected>Please Select</option>
+                    <option value="09:00-09:45">09:00-09:45</option>
+                    <option value="09:45-10:30">09:45-10:30</option>
+                    <option value="10:30-11:15">10:30-11:15</option>
+                    <option value="11:15-12:00">11:15-12:00</option>
+                    <option value="12:00-12:45">12:00-12:45</option>
+                    <option value="12:45-13:30">12:45-13:30</option>
+                    <option value="13:30-14:15">13:30-14:15</option>
+                    <option value="14:15-15:00">14:15-15:00</option>
+                    <option value="15:00-15:45">15:00-15:45</option>
+                    <option value="15:45-16:30">15:45-16:30</option>
+                    <option value="16:30-17:15">16:30-17:15</option>
+                    <option value="17:15-18:00">17:15-18:00</option>
+                    <option value="18:00-18:45">18:00-18:45</option>
+                    <option value="18:45-19:30">18:45-19:30</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <button type="submit">Submit Booking</button>
+            </div>
+        </form>
+
+        <!-- Error message container -->
+        <div id="error-message" class="error" style="display: none;"></div>
+
+        <div class="message">
+            <p>If you need any technical assistance regarding the Green Screen Rooms, feel free to visit AG18 and a member of staff will help you out.</p>
+        </div>
+    </div>
+
+    <script>
+        const emailInput = document.getElementById('email');
+        const confirmEmailInput = document.getElementById('confirm_email');
+        const emailError = document.getElementById('email-error');
+        const confirmEmailError = document.getElementById('confirm-email-error');
+        const errorMessageDiv = document.getElementById('error-message');
+
+        const roomSelect = document.getElementById("room");
+        const dateInput = document.getElementById("date");
+        const timeSlotSelect = document.getElementById("time_slot");
+
+        // Function to disable past dates and weekends
+        function setMinMaxDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const minDate = `${year}-${month}-${day}`;
+
+            const maxBookingDate = new Date(today);
+            maxBookingDate.setDate(today.getDate() + 14); // 2 weeks from today
+            const maxYear = maxBookingDate.getFullYear();
+            const maxMonth = String(maxBookingDate.getMonth() + 1).padStart(2, '0');
+            const maxDay = String(maxBookingDate.getDate()).padStart(2, '0');
+            const maxDate = `${maxYear}-${maxMonth}-${maxDay}`;
+
+            dateInput.min = minDate; // Set the minimum date to today
+            dateInput.max = maxDate; // Set the maximum date to 2 weeks from today
+        }
+
+        // Function to disable weekends
+        function disableWeekends(date) {
+            const day = date.getDay();
+            return day !== 0 && day !== 6; // Disable Sundays (0) and Saturdays (6)
+        }
+
+        // Initialize date picker
+        setMinMaxDate();
+        dateInput.addEventListener('change', () => {
+            const selectedDate = new Date(dateInput.value);
+            if (!disableWeekends(selectedDate)) {
+                alert("Rooms cannot be booked on weekends. Please select a weekday.");
+                dateInput.value = ""; // Clear the selected date
+            }
+        });
+
+        function fetchBookedSlots() {
+            let date = dateInput.value;
+            let room = roomSelect.value;
+            if (date && room) {
+                fetch(`/get_booked_slots?date=${date}&room=${room}`)
+                    .then(response => response.json())
+                    .then(bookedSlots => {
+                        for (let option of timeSlotSelect.options) {
+                            option.disabled = false;
+                            option.textContent = option.value;
+                        }
+                        for (let bookedSlot of bookedSlots) {
+                            for (let option of timeSlotSelect.options) {
+                                if (option.value === bookedSlot) {
+                                    option.disabled = true;
+                                    option.textContent += " (Booked)";
+                                }
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error fetching booked slots:', error));
+            }
+        }
+
+        roomSelect.addEventListener("change", () => {
+            if (roomSelect.value) {
+                dateInput.disabled = false;
+                timeSlotSelect.disabled = true;
+                dateInput.value = "";
+                for (let option of timeSlotSelect.options) {
+                    option.disabled = true;
+                    option.selected = false;
+                    option.textContent = option.value;
+                }
+            } else {
+                dateInput.disabled = true;
+                timeSlotSelect.disabled = true;
+                dateInput.value = "";
+            }
+        });
+
+        dateInput.addEventListener("change", () => {
+            if (dateInput.value) {
+                timeSlotSelect.disabled = false;
+                fetchBookedSlots();
+            } else {
+                timeSlotSelect.disabled = true;
+            }
+        });
+
+        emailInput.addEventListener('input', () => {
+            if (!emailInput.value.endsWith('@city.ac.uk')) {
+                emailError.style.display = 'block';
+            } else {
+                emailError.style.display = 'none';
+            }
+        });
+
+        confirmEmailInput.addEventListener('input', () => {
+            if (emailInput.value !== confirmEmailInput.value) {
+                confirmEmailError.style.display = 'block';
+            } else {
+                confirmEmailError.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
