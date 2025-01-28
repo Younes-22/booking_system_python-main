@@ -78,5 +78,12 @@
         <!-- Back to Booking Form link -->
         <a href="{{ url_for('index') }}" class="back-link">Back to Booking Form</a>
     </div>
+
+    <script>
+        // Redirect to index.html if no booking details are found
+        if (!{{ booking_details | tojson | safe }}) {
+            window.location.href = "{{ url_for('index') }}";
+        }
+    </script>
 </body>
 </html>

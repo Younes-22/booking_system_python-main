@@ -22,6 +22,12 @@
         .message p {
             margin: 0; /* Remove default paragraph margin */
         }
+
+        /* Style for disabled button */
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -87,7 +93,7 @@
             </div>
 
             <div class="form-group">
-                <button type="submit">Submit Booking</button>
+                <button type="submit" id="submit-button" disabled>Submit Booking</button>
             </div>
         </form>
 
@@ -100,7 +106,7 @@
         const confirmEmailInput = document.getElementById('confirm_email');
         const emailError = document.getElementById('email-error');
         const confirmEmailError = document.getElementById('confirm-email-error');
-        const errorMessageDiv = document.getElementById('error-message');
+        const submitButton = document.getElementById('submit-button');
 
         const roomSelect = document.getElementById("room");
         const dateInput = document.getElementById("date");
@@ -191,21 +197,36 @@
             }
         });
 
-        emailInput.addEventListener('input', () => {
-            if (!emailInput.value.endsWith('@city.ac.uk')) {
+        // Function to validate email and confirm email
+        function validateEmails() {
+            const email = emailInput.value;
+            const confirmEmail = confirmEmailInput.value;
+
+            // Check if email ends with @city.ac.uk
+            if (!email.endsWith('@city.ac.uk')) {
                 emailError.style.display = 'block';
             } else {
                 emailError.style.display = 'none';
             }
-        });
 
-        confirmEmailInput.addEventListener('input', () => {
-            if (emailInput.value !== confirmEmailInput.value) {
+            // Check if emails match
+            if (email !== confirmEmail) {
                 confirmEmailError.style.display = 'block';
             } else {
                 confirmEmailError.style.display = 'none';
             }
-        });
+
+            // Enable submit button only if both checks pass
+            if (email.endsWith('@city.ac.uk') && email === confirmEmail) {
+                submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true;
+            }
+        }
+
+        // Add event listeners for email validation
+        emailInput.addEventListener('input', validateEmails);
+        confirmEmailInput.addEventListener('input', validateEmails);
     </script>
 </body>
 </html>

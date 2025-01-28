@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 import mysql.connector
 from datetime import datetime, timedelta
 import os
@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 from dotenv import load_dotenv
 
 app = Flask(__name__, static_folder='static')
+app.secret_key = 'your_secret_key'  # Required for session management
 
 # Load environment variables from .env file
 load_dotenv()
@@ -171,16 +172,32 @@ def submit_booking():
 
         send_booking_email(email, subject, body)
 
-        # Render the confirmation page with booking details
-        return render_template('confirmation.html', 
-                              success_message="Booking successful!", 
-                              booking_details={
-                                  "email": email,
-                                  "full_name": full_name,
-                                  "room": room,
-                                  "date": date,
-                                  "time_slot": time_slot
-                              })
+        # Store booking details in session
+        session['booking_details'] = {
+            "email": email,
+            "full_name": full_name,
+            "room": room,
+            "date": date,
+            "time_slot": time_slot
+        }
+
+        # Redirect to the confirmation page
+        return redirect(url_for('confirmation'))
+
+@app.route('/confirmation')
+def confirmation():
+    # Retrieve booking details from session
+    booking_details = session.get('booking_details')
+    if not booking_details:
+        # If no booking details are found, redirect to the index page
+        return redirect(url_for('index'))
+
+    # Clear the session data after displaying it
+    session.pop('booking_details', None)
+
+    return render_template('confirmation.html', 
+                          success_message="Booking successful!", 
+                          booking_details=booking_details)
 
 if __name__ == '__main__':
     app.run(debug=True)
