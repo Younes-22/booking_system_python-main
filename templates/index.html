@@ -5,10 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Room Booking</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Add this CSS for the message */
+        .message {
+            margin-top: 20px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f0f8ff; /* Light blue background */
+            border-left: 5px solid #007bff; /* Blue left border */
+            font-size: 1.2em; /* Larger font size */
+            color: #333; /* Dark text color */
+            border-radius: 5px; /* Rounded corners */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+
+        .message p {
+            margin: 0; /* Remove default paragraph margin */
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Room Booking Form</h1>
+
+        <!-- Message positioned below the form title -->
+        <div class="message">
+            <p>If you need any technical assistance regarding the Green Screen Rooms, feel free to visit AG18 and a member of staff will help you out.</p>
+        </div>
+
         <form action="{{ url_for('submit_booking') }}" method="POST">
             <div class="form-group">
                 <label for="email">Email:</label>
@@ -69,10 +93,6 @@
 
         <!-- Error message container -->
         <div id="error-message" class="error" style="display: none;"></div>
-
-        <div class="message">
-            <p>If you need any technical assistance regarding the Green Screen Rooms, feel free to visit AG18 and a member of staff will help you out.</p>
-        </div>
     </div>
 
     <script>

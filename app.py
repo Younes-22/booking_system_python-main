@@ -9,10 +9,27 @@ def get_db_connection():
     conn = mysql.connector.connect(
         host='localhost',
         user='root',  # Replace with your MySQL user
-        password='',  # Empty if no password
+        password='',  # Replace with your MySQL password
         database='room_booking_system'
     )
     return conn
+
+# Function to delete past bookings
+def delete_past_bookings():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Get today's date
+    today = datetime.now().date()
+    
+    # Delete bookings with dates in the past
+    query = "DELETE FROM booking WHERE date < %s"
+    cursor.execute(query, (today,))
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+    print(f"Deleted {cursor.rowcount} past bookings.")
 
 @app.route('/get_booked_slots', methods=['GET'])
 def get_booked_slots():
@@ -28,11 +45,16 @@ def get_booked_slots():
 
 @app.route('/')
 def index():
+    # Delete past bookings before rendering the page
+    delete_past_bookings()
     return render_template('index.html')
 
 @app.route('/submit_booking', methods=['POST'])
 def submit_booking():
     if request.method == 'POST':
+        # Delete past bookings before processing the new booking
+        delete_past_bookings()
+
         email = request.form['email']
         confirm_email = request.form['confirm_email']
         full_name = request.form['full_name']

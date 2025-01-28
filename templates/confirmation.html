@@ -5,10 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Confirmation</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Add this CSS for the messages */
+        .message {
+            margin-top: 20px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f0f8ff; /* Light blue background */
+            border-left: 5px solid #007bff; /* Blue left border */
+            font-size: 1.2em; /* Larger font size */
+            color: #333; /* Dark text color */
+            border-radius: 5px; /* Rounded corners */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+
+        .message p {
+            margin: 0; /* Remove default paragraph margin */
+        }
+
+        .footer-message {
+            margin-top: 40px;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.1em;
+            color: #555;
+            background-color: #f9f9f9; /* Light gray background */
+            border-top: 1px solid #ddd; /* Top border */
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 1.1em;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Booking Confirmation</h1>
+
+        <!-- Technical assistance message -->
+        <div class="message">
+            <p>If you need any technical assistance regarding the Green Screen Rooms, feel free to visit AG18 and a member of staff will help you out.</p>
+        </div>
+
+        <!-- Booking confirmation details -->
         <div class="confirmation">
             <p>{{ success_message }}</p>
             <div class="booking-details">
@@ -19,6 +67,13 @@
                 <p><strong>Time Slot:</strong> {{ booking_details.time_slot }}</p>
             </div>
         </div>
+
+        <!-- Footer message with a smiling emoji -->
+        <div class="footer-message">
+            <p>Don't forget your booking time please 😊</p>
+        </div>
+
+        <!-- Back to Booking Form link -->
         <a href="{{ url_for('index') }}" class="back-link">Back to Booking Form</a>
     </div>
 </body>
