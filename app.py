@@ -1,8 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import mysql.connector
 from datetime import datetime, timedelta
+import os
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from dotenv import load_dotenv
 
 app = Flask(__name__, static_folder='static')
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Database connection
 def get_db_connection():
@@ -30,6 +38,44 @@ def delete_past_bookings():
     cursor.close()
     conn.close()
     print(f"Deleted {cursor.rowcount} past bookings.")
+
+# Function to send booking confirmation email
+def send_booking_email(to_email, subject, body):
+    # Fetch Gmail credentials from environment variables
+    from_email = os.getenv('GMAIL_EMAIL')
+    password = os.getenv('GMAIL_PASSWORD')
+
+    if not from_email or not password:
+        raise Exception("Gmail credentials are not set in environment variables.")
+
+    # Set up the MIME
+    msg = MIMEMultipart()
+    msg['From'] = from_email
+    msg['To'] = to_email
+    msg['Subject'] = subject
+
+    # Add email body
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        # Connect to the Gmail SMTP server
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()  # Encrypt the connection
+
+        # Log in to your Gmail account
+        server.login(from_email, password)
+
+        # Send email
+        text = msg.as_string()
+        server.sendmail(from_email, to_email, text)
+
+        print("Email sent successfully!")
+
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+
+    finally:
+        server.quit()
 
 @app.route('/get_booked_slots', methods=['GET'])
 def get_booked_slots():
@@ -104,6 +150,26 @@ def submit_booking():
         conn.commit()
         cursor.close()
         conn.close()
+
+        # Send booking confirmation email
+        subject = "Booking Confirmation"
+        body = f"""
+        Dear {full_name},
+
+        Thank you for booking a Green Screen Room! Below are your booking details:
+
+        - Email: {email}
+        - Room: {room}
+        - Date: {date}
+        - Time Slot: {time_slot}
+
+        If you have any questions or need to make changes, please contact us or visit AG18.
+
+        Best regards,
+        Journalism Tech Team
+        """
+
+        send_booking_email(email, subject, body)
 
         # Render the confirmation page with booking details
         return render_template('confirmation.html', 
