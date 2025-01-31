@@ -85,7 +85,6 @@ def submit_booking():
 
         email = request.form['email']
         confirm_email = request.form['confirm_email']
-        full_name = request.form['full_name']
         room = request.form['room']
         time_slot = request.form['time_slot']
         date = request.form['date']
@@ -124,19 +123,25 @@ def submit_booking():
             conn.close()
             return jsonify({"error": "This time slot is already booked for the selected room."}), 400
 
-        cursor.execute("INSERT INTO booking (email, fullName, room, timeSlot, date) VALUES (%s, %s, %s, %s, %s)", 
-                       (email, full_name, room, time_slot, date))
+        # Insert booking WITHOUT name or email
+        cursor.execute("INSERT INTO booking (room, timeSlot, date) VALUES (%s, %s, %s)", 
+                       (room, time_slot, date))
         conn.commit()
+
+        # Get the booking ID
+        booking_id = cursor.lastrowid  
+
         cursor.close()
         conn.close()
 
+        # Send confirmation email with booking ID
         subject = "Booking Confirmation"
         body = f"""
-        Dear {full_name},
+        Dear User,
 
         Thank you for booking a Green Screen Room! Below are your booking details:
 
-        - Email: {email}
+        - Booking ID: {booking_id}
         - Room: {room}
         - Date: {date}
         - Time Slot: {time_slot}
@@ -147,11 +152,11 @@ def submit_booking():
         Journalism Tech Team
         """
 
-        send_booking_email(email, subject, body)
+        send_booking_email(email, subject, body)  # Send email without storing it
 
         session['booking_details'] = {
+            "booking_id": booking_id,
             "email": email,
-            "full_name": full_name,
             "room": room,
             "date": date,
             "time_slot": time_slot
