@@ -1,17 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 import mysql.connector
 from datetime import datetime, timedelta
-import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from dotenv import load_dotenv
 
 app = Flask(__name__, static_folder='static')
-app.secret_key = 'your_secret_key'  # Required for session management
+app.secret_key = 'my_secret_key'  # Required for session management
 
-# Load environment variables from .env file
-load_dotenv()
+# Hardcoded Gmail credentials (Not Recommended for Production)
+GMAIL_EMAIL = "room.city.booking@gmail.com"
+GMAIL_PASSWORD = "qfrjlkudstbojawp"  # Use an App Password, NOT your real password
 
 # Database connection
 def get_db_connection():
@@ -28,10 +27,8 @@ def delete_past_bookings():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Get today's date
     today = datetime.now().date()
     
-    # Delete bookings with dates in the past
     query = "DELETE FROM booking WHERE date < %s"
     cursor.execute(query, (today,))
     
@@ -42,39 +39,25 @@ def delete_past_bookings():
 
 # Function to send booking confirmation email
 def send_booking_email(to_email, subject, body):
-    # Fetch Gmail credentials from environment variables
-    from_email = os.getenv('GMAIL_EMAIL')
-    password = os.getenv('GMAIL_PASSWORD')
-
-    if not from_email or not password:
-        raise Exception("Gmail credentials are not set in environment variables.")
+    from_email = GMAIL_EMAIL
+    password = GMAIL_PASSWORD
 
     # Set up the MIME
     msg = MIMEMultipart()
     msg['From'] = from_email
     msg['To'] = to_email
     msg['Subject'] = subject
-
-    # Add email body
     msg.attach(MIMEText(body, 'plain'))
 
     try:
         # Connect to the Gmail SMTP server
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()  # Encrypt the connection
-
-        # Log in to your Gmail account
-        server.login(from_email, password)
-
-        # Send email
-        text = msg.as_string()
-        server.sendmail(from_email, to_email, text)
-
+        server.login(from_email, password)  # Log in
+        server.sendmail(from_email, to_email, msg.as_string())  # Send email
         print("Email sent successfully!")
-
     except Exception as e:
         print(f"Failed to send email: {e}")
-
     finally:
         server.quit()
 
@@ -92,14 +75,12 @@ def get_booked_slots():
 
 @app.route('/')
 def index():
-    # Delete past bookings before rendering the page
     delete_past_bookings()
     return render_template('index.html')
 
 @app.route('/submit_booking', methods=['POST'])
 def submit_booking():
     if request.method == 'POST':
-        # Delete past bookings before processing the new booking
         delete_past_bookings()
 
         email = request.form['email']
@@ -120,17 +101,14 @@ def submit_booking():
             booking_date = datetime.strptime(date, '%Y-%m-%d').date()
             today = datetime.now().date()
 
-            # Check if the date is in the past
             if booking_date < today:
                 return jsonify({"error": "The date must be today or in the future."}), 400
 
-            # Check if the date is more than 2 weeks in advance
-            max_booking_date = today + timedelta(days=14)  # 2 weeks from today
+            max_booking_date = today + timedelta(days=14)  
             if booking_date > max_booking_date:
                 return jsonify({"error": "Rooms cannot be booked more than 2 weeks in advance."}), 400
 
-            # Check if the date is a weekend (Saturday or Sunday)
-            if booking_date.weekday() >= 5:  # 5 = Saturday, 6 = Sunday
+            if booking_date.weekday() >= 5:  
                 return jsonify({"error": "Rooms cannot be booked on weekends. Please select a weekday."}), 400
 
         except ValueError:
@@ -146,13 +124,12 @@ def submit_booking():
             conn.close()
             return jsonify({"error": "This time slot is already booked for the selected room."}), 400
 
-        # Insert the new booking into the database
-        cursor.execute("INSERT INTO booking (email, fullName, room, timeSlot, date) VALUES (%s, %s, %s, %s, %s)", (email, full_name, room, time_slot, date))
+        cursor.execute("INSERT INTO booking (email, fullName, room, timeSlot, date) VALUES (%s, %s, %s, %s, %s)", 
+                       (email, full_name, room, time_slot, date))
         conn.commit()
         cursor.close()
         conn.close()
 
-        # Send booking confirmation email
         subject = "Booking Confirmation"
         body = f"""
         Dear {full_name},
@@ -172,7 +149,6 @@ def submit_booking():
 
         send_booking_email(email, subject, body)
 
-        # Store booking details in session
         session['booking_details'] = {
             "email": email,
             "full_name": full_name,
@@ -181,18 +157,14 @@ def submit_booking():
             "time_slot": time_slot
         }
 
-        # Redirect to the confirmation page
         return redirect(url_for('confirmation'))
 
 @app.route('/confirmation')
 def confirmation():
-    # Retrieve booking details from session
     booking_details = session.get('booking_details')
     if not booking_details:
-        # If no booking details are found, redirect to the index page
         return redirect(url_for('index'))
 
-    # Clear the session data after displaying it
     session.pop('booking_details', None)
 
     return render_template('confirmation.html', 

@@ -80,10 +80,14 @@
     </div>
 
     <script>
-        // Redirect to index.html if no booking details are found
-        if (!{{ booking_details | tojson | safe }}) {
+        // Parse booking details properly
+        let bookingDetails = JSON.parse('{{ booking_details | tojson | safe }}');
+    
+        // Redirect if bookingDetails is empty or null
+        if (!bookingDetails || Object.keys(bookingDetails).length === 0) {
             window.location.href = "{{ url_for('index') }}";
         }
     </script>
+    
 </body>
 </html>
