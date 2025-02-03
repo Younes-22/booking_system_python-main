@@ -225,3 +225,21 @@ select option:hover {
     background-color: #8C1D40 !important; /* Burgundy background on hover */
     color: white !important; /* White text on hover */
 } 
+
+.flash-success {
+    background: #dff0d8;
+    color: #3c763d;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.flash-error {
+    background: #f2dede;
+    color: #a94442;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 10px;
+}

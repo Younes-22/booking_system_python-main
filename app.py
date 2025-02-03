@@ -1,12 +1,15 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
 import mysql.connector
 from datetime import datetime, timedelta
 import smtplib
+import string
+import random
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from flask import flash
 
 app = Flask(__name__, static_folder='static')
-app.secret_key = 'my_secret_key'  # Required for session management
+app.secret_key = 'my_secret_key'  # Required for session management and flash messages
 
 # Hardcoded Gmail credentials (Not Recommended for Production)
 GMAIL_EMAIL = "room.city.booking@gmail.com"
@@ -78,6 +81,15 @@ def index():
     delete_past_bookings()
     return render_template('index.html')
 
+def generate_unique_code(length=8):
+    # Define the characters to use in the code
+    characters = string.ascii_letters + string.digits  # Letters (uppercase + lowercase) + digits
+    
+    # Generate a random code by selecting 'length' number of characters
+    unique_code = ''.join(random.choice(characters) for _ in range(length))
+    
+    return unique_code
+
 @app.route('/submit_booking', methods=['POST'])
 def submit_booking():
     if request.method == 'POST':
@@ -123,9 +135,12 @@ def submit_booking():
             conn.close()
             return jsonify({"error": "This time slot is already booked for the selected room."}), 400
 
-        # Insert booking WITHOUT name or email
-        cursor.execute("INSERT INTO booking (room, timeSlot, date) VALUES (%s, %s, %s)", 
-                       (room, time_slot, date))
+        # Generate a unique code
+        unique_code = generate_unique_code()
+
+        # Insert booking with the unique code
+        cursor.execute("INSERT INTO booking (room, timeSlot, date, unique_code) VALUES (%s, %s, %s, %s)", 
+                       (room, time_slot, date, unique_code))
         conn.commit()
 
         # Get the booking ID
@@ -134,7 +149,7 @@ def submit_booking():
         cursor.close()
         conn.close()
 
-        # Send confirmation email with booking ID
+        # Send confirmation email with booking ID and unique code
         subject = "Booking Confirmation"
         body = f"""
         Dear User,
@@ -142,6 +157,7 @@ def submit_booking():
         Thank you for booking a Green Screen Room! Below are your booking details:
 
         - Booking ID: {booking_id}
+        - Unique Cancellation Code: {unique_code}
         - Room: {room}
         - Date: {date}
         - Time Slot: {time_slot}
@@ -152,10 +168,11 @@ def submit_booking():
         Journalism Tech Team
         """
 
-        send_booking_email(email, subject, body)  # Send email without storing it
+        send_booking_email(email, subject, body)  # Send email with the unique code
 
         session['booking_details'] = {
             "booking_id": booking_id,
+            "unique_code": unique_code,
             "email": email,
             "room": room,
             "date": date,
@@ -175,6 +192,42 @@ def confirmation():
     return render_template('confirmation.html', 
                           success_message="Booking successful!", 
                           booking_details=booking_details)
+
+@app.route("/cancel")
+def cancel_booking_page():
+    return render_template("cancel.html")
+
+@app.route("/cancel_booking", methods=["POST"])
+def cancel_booking():
+    unique_code = request.form.get("unique_code")
+
+    if not unique_code:
+        flash("Please enter a valid unique code.", "error")
+        return redirect(url_for("cancel_booking_page"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Check if the booking exists
+        cursor.execute("SELECT * FROM booking WHERE unique_code = %s", (unique_code,))
+        booking = cursor.fetchone()
+
+        if booking:
+            # Delete the booking
+            cursor.execute("DELETE FROM booking WHERE unique_code = %s", (unique_code,))
+            conn.commit()
+            flash("Your booking has been successfully cancelled.", "success")
+        else:
+            flash("Invalid unique code. No booking found.", "error")
+    except Exception as e:
+        print(f"Error cancelling booking: {e}")
+        flash("An error occurred while cancelling your booking.", "error")
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for("cancel_booking_page"))
 
 if __name__ == '__main__':
     app.run(debug=True)

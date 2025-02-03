@@ -61,6 +61,7 @@
             <p>{{ success_message }}</p>
             <div class="booking-details">
                 <p><strong>Email:</strong> {{ booking_details.email }}</p>
+                <p><strong>Full Name:</strong> {{ booking_details.full_name }}</p>
                 <p><strong>Room:</strong> {{ booking_details.room }}</p>
                 <p><strong>Date:</strong> {{ booking_details.date }}</p>
                 <p><strong>Time Slot:</strong> {{ booking_details.time_slot }}</p>
@@ -79,14 +80,10 @@
     </div>
 
     <script>
-        // Parse booking details properly
-        let bookingDetails = JSON.parse('{{ booking_details | tojson | safe }}');
-    
-        // Redirect if bookingDetails is empty or null
-        if (!bookingDetails || Object.keys(bookingDetails).length === 0) {
+        // Redirect to index.html if no booking details are found
+        if (!{{ booking_details | tojson | safe }}) {
             window.location.href = "{{ url_for('index') }}";
         }
     </script>
-    
 </body>
 </html>
