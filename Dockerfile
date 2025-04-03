@@ -1,24 +1,24 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
+# Builder stage
+FROM python:3.10-slim AS builder
+WORKDIR /app
+COPY app/requirements.txt .
+RUN pip install --user -r requirements.txt
 
-# Set the working directory
+# Runtime stage
+FROM python:3.10-slim
 WORKDIR /app
 
-# Copy the requirements file into the container
-COPY requirements.txt .
+# Install MySQL client (only needed if your app runs mysql commands)
+RUN apt-get update && apt-get install -y default-mysql-client && rm -rf /var/lib/apt/lists/*
 
-# Copy the environment file into the container
-COPY .env .env
+# Copy necessary files
+COPY --from=builder /root/.local /root/.local
+COPY app/ .
 
+ENV PATH=/root/.local/bin:$PATH
 
-# Install dependencies
-RUN pip install --upgrade pip && pip install -r requirements.txt
+# Directly start your application
+CMD ["python", "app.py"]
 
-# Copy the rest of the app's code
-COPY . .
-
-# Expose port 5000
-EXPOSE 5000
-
-# Start the app using gunicorn
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+#from yt vid
+#multi stage builds
