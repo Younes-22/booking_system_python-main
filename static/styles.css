@@ -1,0 +1,245 @@
+/* styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background: #ffffff; /* White background */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Container for the form */
+.container {
+    max-width: 600px;
+    width: 100%;
+    padding: 30px;
+    background: #ffffff; /* White background */
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Form header */
+.container h1 {
+    text-align: center;
+    color: #8C1D40; /* Burgundy color */
+    font-size: 2rem;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.container h1::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    background: #8C1D40; /* Burgundy color */
+    margin: 10px auto 0;
+    border-radius: 2px;
+}
+
+/* Form group styling */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Form labels */
+form label {
+    font-size: 1rem;
+    color: #555; /* Dark gray for labels */
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+/* Form inputs and select dropdowns */
+form input, form select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+form input:focus, form select:focus {
+    border-color: #8C1D40; /* Burgundy color */
+    box-shadow: 0 0 8px rgba(140, 29, 64, 0.3); /* Burgundy shadow */
+    outline: none;
+}
+
+/* Submit button */
+form button {
+    width: 100%;
+    padding: 12px;
+    background: #8C1D40; /* Burgundy color */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+form button:hover {
+    background: #6E1632; /* Darker burgundy on hover */
+    transform: translateY(-2px);
+}
+
+form button:active {
+    transform: translateY(0);
+}
+
+/* Error message styling */
+.error {
+    color: #d9534f; /* Red for errors */
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #d9534f;
+    background-color: #f2dede;
+    border-radius: 8px;
+    text-align: center;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-10px);
+    }
+    50% {
+        transform: translateX(10px);
+    }
+    75% {
+        transform: translateX(-10px);
+    }
+}
+
+.error .booked-details {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.error .booked-details p {
+    margin: 5px 0;
+    color: #333;
+}
+
+/* Confirmation page styling */
+.confirmation {
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #4CAF50; /* Green border for success */
+    background-color: #dff0d8; /* Light green background */
+    border-radius: 8px;
+    color: #3c763d; /* Dark green text */
+    animation: fadeIn 1s ease-in-out;
+}
+
+.confirmation .booking-details {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.confirmation .booking-details p {
+    margin: 5px 0;
+    color: #333;
+}
+
+/* Back link styling */
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    color: #8C1D40; /* Burgundy color */
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: #6E1632; /* Darker burgundy on hover */
+    text-decoration: underline;
+}
+
+/* Message styling */
+.message {
+    margin-top: 20px;
+    text-align: center;
+    color: #555;
+    font-style: italic;
+}
+
+/* Style for the select dropdown */
+select {
+    appearance: none; /* Remove default arrow */
+    -webkit-appearance: none; /* Remove default arrow for Safari */
+    -moz-appearance: none; /* Remove default arrow for Firefox */
+    background: url("data:image/svg+xml;utf8,<svg fill='%238C1D40' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>") no-repeat right 10px center/12px 12px; /* Custom arrow */
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+select:focus {
+    border-color: #8C1D40; /* Burgundy border on focus */
+    box-shadow: 0 0 8px rgba(140, 29, 64, 0.3); /* Burgundy shadow on focus */
+    outline: none;
+}
+
+/* Style for dropdown options */
+select option {
+    background-color: white;
+    color: #333;
+    padding: 10px;
+}
+
+/* Burgundy hover effect for dropdown options */
+select option:hover {
+    background-color: #8C1D40 !important; /* Burgundy background on hover */
+    color: white !important; /* White text on hover */
+} 
+
+.flash-success {
+    background: #dff0d8;
+    color: #3c763d;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.flash-error {
+    background: #f2dede;
+    color: #a94442;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 10px;
+}

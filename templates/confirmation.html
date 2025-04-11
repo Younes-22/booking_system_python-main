@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Booking Confirmation</h1>
+
+        <!-- Technical assistance message -->
+        <div class="message">
+            <p>If you need any technical assistance regarding the Green Screen Rooms, feel free to visit AG18 and a member of staff will help you out.</p>
+        </div>
+
+        <!-- Booking confirmation details -->
+        <div class="confirmation">
+            <p>{{ success_message }}</p>
+            <div class="booking-details">
+                <p><strong>Email:</strong> {{ booking_details.email }}</p>
+                <p><strong>Unique Code:</strong> {{ booking_details.unique_code }}</p>
+                <p><strong>Room:</strong> {{ booking_details.room }}</p>
+                <p><strong>Date:</strong> {{ booking_details.date }}</p>
+                <p><strong>Time Slot:</strong> {{ booking_details.time_slot }}</p>
+            </div>
+        </div>
+
+        <!-- Footer message with a smiling emoji -->
+        <div class="footer-message">
+            <p>Don't forget your booking time please 😊</p>
+            <p>A confirmation email has been sent to you </p>
+            <p>(PLEASE CHECK YOUR JUNK FOLDER)</p>
+        </div>
+
+        <!-- Back to Booking Form link -->
+        <a href="{{ url_for('index') }}" class="back-link">Back to Booking Form</a>
+    </div>
+
+    <script>
+        // Redirect to index.html if no booking details are found
+        const bookingDetails = "{{ booking_details | tojson | safe }}";
+        if (!bookingDetails) {
+            window.location.href = "{{ url_for('index') }}";
+        }
+    </script>
+</body>
+</html>
