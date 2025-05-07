@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Availability</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Room Availability</h1>
+         
+        <form class="filters" method="GET" action="{{ url_for('availability') }}" id="availability-form">
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" id="date" name="date" value="{{ selected_date }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="room">Room:</label>
+                <select id="room" name="room">
+                    {% for room in rooms %}
+                    <option value="{{ room }}" {% if room == selected_room %}selected{% endif %}>{{ room }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+        
+        <h2>Availability for {{ selected_room }} on {{ selected_date }}</h2>
+        
+        <div class="availability-grid">
+            {% for slot in availability_data %}
+            <div class="time-slot {% if slot.is_available %}available{% else %}booked{% endif %}">
+                {{ slot.time_slot }}
+                <div>{% if slot.is_available %}Available{% else %}Booked{% endif %}</div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <a href="{{ url_for('index') }}" class="back-link">Back to Booking Form</a>
+    </div>
+
+    <script>
+        // Set min and max date for date picker
+        const dateInput = document.getElementById('date');
+        
+        function setMinMaxDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const minDate = `${year}-${month}-${day}`;
+    
+            const maxBookingDate = new Date(today);
+            maxBookingDate.setDate(today.getDate() + 14); // 2 weeks from today
+            const maxYear = maxBookingDate.getFullYear();
+            const maxMonth = String(maxBookingDate.getMonth() + 1).padStart(2, '0');
+            const maxDay = String(maxBookingDate.getDate()).padStart(2, '0');
+            const maxDate = `${maxYear}-${maxMonth}-${maxDay}`;
+    
+            dateInput.min = minDate;
+            dateInput.max = maxDate;
+        }
+        
+        setMinMaxDate();
+        
+        // Auto-submit form when selection changes
+        document.getElementById('room').addEventListener('change', function() {
+            document.getElementById('availability-form').submit();
+        });
+        
+        // Prevent date from being cleared and handle date changes
+        dateInput.addEventListener('change', function() {
+            if (!dateInput.value) {
+                // If date is cleared, set it to today's date
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                dateInput.value = `${year}-${month}-${day}`;
+            }
+            
+            const selectedDate = new Date(dateInput.value);
+            const day = selectedDate.getDay();
+            
+            // Check if weekend (0 = Sunday, 6 = Saturday)
+            if (day === 0 || day === 6) {
+                alert("Rooms cannot be booked on weekends. Please select a weekday.");
+                dateInput.value = "{{ selected_date }}"; // Reset to current value
+            } else {
+                document.getElementById('availability-form').submit();
+            }
+        });
+    </script>
+</body>
+</html>
