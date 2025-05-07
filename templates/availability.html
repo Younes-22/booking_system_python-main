@@ -8,38 +8,47 @@
 </head>
 <body>
     <div class="container">
-        <h1>Room Availability</h1>
+        <header>
+            <h1>Room Availability</h1>
+        </header>
          
-        <form class="filters" method="GET" action="{{ url_for('availability') }}" id="availability-form">
-            <div class="form-group">
-                <label for="date">Date:</label>
-                <input type="date" id="date" name="date" value="{{ selected_date }}" required>
-            </div>
+        <main>
+            <form class="filters" method="GET" action="{{ url_for('availability') }}" id="availability-form">
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" name="date" value="{{ selected_date }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="room">Room:</label>
+                    <select id="room" name="room">
+                        {% for room in rooms %}
+                        <option value="{{ room }}" {% if room == selected_room %}selected{% endif %}>{{ room }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
             
-            <div class="form-group">
-                <label for="room">Room:</label>
-                <select id="room" name="room">
-                    {% for room in rooms %}
-                    <option value="{{ room }}" {% if room == selected_room %}selected{% endif %}>{{ room }}</option>
+            <section>
+                <h2>Availability for {{ selected_room }} on {{ selected_date }}</h2>
+                
+                <div class="availability-grid">
+                    {% for slot in availability_data %}
+                    <div class="time-slot {% if slot.is_available %}available{% else %}booked{% endif %}">
+                        {{ slot.time_slot }}
+                        <div>{% if slot.is_available %}Available{% else %}Booked{% endif %}</div>
+                    </div>
                     {% endfor %}
-                </select>
-            </div>
-        </form>
-        
-        <h2>Availability for {{ selected_room }} on {{ selected_date }}</h2>
-        
-        <div class="availability-grid">
-            {% for slot in availability_data %}
-            <div class="time-slot {% if slot.is_available %}available{% else %}booked{% endif %}">
-                {{ slot.time_slot }}
-                <div>{% if slot.is_available %}Available{% else %}Booked{% endif %}</div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <a href="{{ url_for('index') }}" class="back-link">Back to Booking Form</a>
+                </div>
+            </section>
+            
+            <nav>
+                <a href="{{ url_for('index') }}" class="back-link">Back to Booking Form</a>
+            </nav>
+        </main>
     </div>
 
+    <!-- Keep your existing script -->
     <script>
         // Set min and max date for date picker
         const dateInput = document.getElementById('date');
