@@ -193,7 +193,29 @@ form button:active {
 }
 
 /* Style for the select dropdown */
-select {
+/* Room selector styling */
+.filters select {
+    min-width: 120px;  /* Increased width */
+    padding: 8px 30px 8px 10px;  /* Added padding-right for the arrow */
+    appearance: none;  /* Remove default arrow */
+    background: #fff url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 5px center;  /* Custom arrow */
+    background-size: 20px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.filters select:hover {
+    border-color: #80bdff;
+    cursor: pointer;
+}
+
+.filters select:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.filters select {
     appearance: none; /* Remove default arrow */
     -webkit-appearance: none; /* Remove default arrow for Safari */
     -moz-appearance: none; /* Remove default arrow for Firefox */
@@ -297,7 +319,7 @@ select option:hover {
     display: inline-block;
     margin-top: 20px;
     padding: 10px 20px;
-    background-color: #6c757d;
+    background-color: #721c24;
     color: white;
     text-decoration: none;
     border-radius: 5px;
