@@ -214,5 +214,42 @@ def cancel_booking():
 
     return redirect(url_for("cancel_booking_page"))
 
+@app.route('/availability')
+def availability():
+    selected_date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+    selected_room = request.args.get('room', 'Room 1')
+    
+    # List of all rooms
+    rooms = ['Room 1', 'Room 2']
+    
+    # Get all booked slots for the selected date and room
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT timeSlot FROM booking WHERE date = %s AND room = %s", 
+                  (selected_date, selected_room))
+    booked_slots = [slot[0] for slot in cursor.fetchall()]
+    cursor.close()
+    conn.close()
+    
+    # All possible time slots
+    all_slots = [
+        "09:00-09:45", "09:45-10:30", "10:30-11:15", "11:15-12:00",
+        "12:00-12:45", "12:45-13:30", "13:30-14:15", "14:15-15:00",
+        "15:00-15:45", "15:45-16:30", "16:30-17:15", "17:15-18:00",
+        "18:00-18:45", "18:45-19:30"
+    ]
+    
+    # Create availability data
+    availability_data = [
+        {'time_slot': slot, 'is_available': slot not in booked_slots}
+        for slot in all_slots
+    ]
+    
+    return render_template('availability.html',
+                         selected_date=selected_date,
+                         selected_room=selected_room,
+                         rooms=rooms,
+                         availability_data=availability_data)
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
